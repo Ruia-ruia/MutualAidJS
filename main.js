@@ -17,7 +17,6 @@ class PQueue {
   }
 
   set(elem, p){
-
     var qitem = new QElem(elem, p);
     var flag = false;
 
@@ -62,8 +61,8 @@ class Graph {
    }
 
    initEdge(node1, node2, work){
-this.nodes[node1].push({[node2]:work})
-this.nodes[node2].push({[node1]:work})
+     this.nodes[node1].push({[node2]:work})
+     this.nodes[node2].push({[node1]:work})
    }
 }
 
@@ -92,8 +91,15 @@ class RecipientRequest{
 
 
 /*
-FUNCTIONS - initialise objects ready for steps: Time Prioritisation, Shortest Path Verification, Allocation, Final Confirmation. 
+FUNCTIONS and GLOBALS - initialise objects ready for steps: Time Prioritisation, Shortest Path Verification, Allocation, Final Confirmation. 
 */
+
+const VOLUNTEERS_DB_ID = '1TgNNRFOR-u-2ppZ4fpFC9hPgdFdceowHGhqBGh0NNH4'; //Google sheet ID
+
+function storeVolunteer(volObject){
+  var sheet = SpreadsheetApp.openById(VOLUNTEERS_DB_ID);
+  sheet.appendRow([volObject.name, volObject.addr, volObject.numStr, volObject.email]);
+}
 
 function initObjects() {
   var sheet = SpreadsheetApp.getActiveSheet();
@@ -106,16 +112,16 @@ function initObjects() {
   var email = data[i][3];
   var addr = data[i][4];
   var numStr = data[i][5];
+  var item = data[i][6];
   
   if(type === 'Recipient'){
-    var item = data[i][6];
     var newReq = new RecipientRequest(name, addr, numStr, email, item, timestamp);
   
   } else if (type === 'Volunteer') {
-    var newVol = new Volunteer(name, addr, numStr, email);
+    var volObject = new Volunteer(name, addr, numStr, email);
+    storeVolunteer(volObject);
     
   } else if (type === 'Both') {
-    var item = data[i][6];
     var newVol = new Volunteer(name, addr, numStr, email);
     var newReq = new RecipientRequest(name, addr, numStr, email, item, timestamp);
     
