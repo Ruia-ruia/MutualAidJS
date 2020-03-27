@@ -84,6 +84,7 @@ class RecipientRequest{
     this.numStr = numStr;
     this.email = email;
     this.item = item;
+    this.timestamp = timestamp;
   }
 }
 
@@ -94,17 +95,43 @@ class RecipientRequest{
 FUNCTIONS and GLOBALS - initialise objects ready for steps: Time Prioritisation, Shortest Path Verification, Allocation, Final Confirmation. 
 */
 
-const VOLUNTEERS_DB_ID = '1TgNNRFOR-u-2ppZ4fpFC9hPgdFdceowHGhqBGh0NNH4'; //Google sheet ID
+const VOLUNTEERS = '1Cgw0MKUHkIBGwi8SUHCtGXhUdezfuNpjd3Ynsto9ggI';
+const RESPONSES = '1s8y5I73fNdvkfPz1xqw3qlyV9GuQKmoRjYaZNs7Tf7M';
+const REQUESTS = '1FlQzQtN7TZmBeFdORGH3Hy7_rU4EjklxH6UT6KfIQBE';
+var pQ = new PQueue();
 
-function storeVolunteer(volObject){
-  var sheet = SpreadsheetApp.openById(VOLUNTEERS_DB_ID);
+function getVolunteersByProximity(addr) {
+  /*
+  This is where we will attempt to interface with Google Maps in order to work out a list of Volunteers within a certain radius. 
+  */
+  
+}
+
+function storeRecipient(recObject) {
+  let completed = false; 
+  var sheet = SpreadsheetApp.openById(REQUESTS);
+  sheet.appendRow([recObject.timestamp, recObject.name, recObject.addr, recObject.email, recObject.item, completed]);
+  
+  /*
+  This is where we will prepare a list of Volunteers who are close to the recipient in preparation for contact and the Request signal. 
+  */
+  var volList = getVolunteersByProximity(recObject.addr);
+  
+}
+
+function storeVolunteer(volObject) {
+  var sheet = SpreadsheetApp.openById(VOLUNTEERS);
   sheet.appendRow([volObject.name, volObject.addr, volObject.numStr, volObject.email]);
 }
 
 function initObjects() {
-  var sheet = SpreadsheetApp.getActiveSheet();
+  var sheet = SpreadsheetApp.openById(RESPONSES);
   var data = sheet.getDataRange().getValues();
   var i = 1;  //to be used in a loop or an event handler
+
+  if (!data[i]) {
+    return 0;
+  }
   
   var timestamp = data[i][0];
   var type = data[i][1];
@@ -114,20 +141,26 @@ function initObjects() {
   var numStr = data[i][5];
   var item = data[i][6];
   
-  if(type === 'Recipient'){
-    var newReq = new RecipientRequest(name, addr, numStr, email, item, timestamp);
+  if(type === 'Recipient') {
+    var recObject = new RecipientRequest(name, addr, numStr, email, item, timestamp);
+    storeRecipient(recObject);
   
   } else if (type === 'Volunteer') {
     var volObject = new Volunteer(name, addr, numStr, email);
     storeVolunteer(volObject);
+    sheet.deleteRow(i+1);  //relative position to be coded 
     
   } else if (type === 'Both') {
-    var newVol = new Volunteer(name, addr, numStr, email);
-    var newReq = new RecipientRequest(name, addr, numStr, email, item, timestamp);
+    var volObject = new Volunteer(name, addr, numStr, email);
+    var recObject = new RecipientRequest(name, addr, numStr, email, item, timestamp);
+    storeVolunteer(volObject);
+    storeRecipient(recObject);
     
   } else {
     Logger.log('Something went wrong - not Volunteer, nor Recipient.')
   }
+  
+  Logger.log(pQ.get(1));
 }
 
 
