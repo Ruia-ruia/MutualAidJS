@@ -109,12 +109,13 @@ function getVolunteersByProximity(addr) {
   var data = sheet.getDataRange().getValues();
   
   var volList = [];
+  var addr = addr.split(', ')[1];
   
   j = data.length;
   for(i = 0; i < j; i++){
     let sp = data[i][1].split(', ')[1];
    
-    if(sp.toLowerCase() === 'marrickville'){
+    if(sp.toLowerCase() === addr){
       volList.push(data[i]);
     }   
   }  
