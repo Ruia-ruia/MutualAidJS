@@ -102,21 +102,37 @@ var pQ = new PQueue();
 
 function getVolunteersByProximity(addr) {
   /*
-  This is where we will attempt to interface with Google Maps in order to work out a list of Volunteers within a certain radius. 
+  This is where we will attempt to interface with Google Maps in 
+  order to work out a list of Volunteers within a certain radius. 
   */
+  var sheet = SpreadsheetApp.openById(VOLUNTEERS);
+  var data = sheet.getDataRange().getValues();
   
+  var volList = [];
+  
+  j = data.length;
+  for(i = 0; i < j; i++){
+    let sp = data[i][1].split(', ')[1];
+   
+    if(sp.toLowerCase() === 'marrickville'){
+      volList.push(data[i]);
+    }   
+  }  
+  
+  return volList;  
 }
 
 function storeRecipient(recObject) {
-  let completed = false; 
+  var completed = false; 
   var sheet = SpreadsheetApp.openById(REQUESTS);
   sheet.appendRow([recObject.timestamp, recObject.name, recObject.addr, recObject.email, recObject.item, completed]);
   
   /*
-  This is where we will prepare a list of Volunteers who are close to the recipient in preparation for contact and the Request signal. 
+  This is where we will prepare a list of Volunteers who are close to 
+  the recipient in preparation for contact and the Request signal. 
   */
   var volList = getVolunteersByProximity(recObject.addr);
-  
+  Logger.log(volList);
 }
 
 function storeVolunteer(volObject) {
@@ -160,7 +176,6 @@ function initObjects() {
     Logger.log('Something went wrong - not Volunteer, nor Recipient.')
   }
   
-  Logger.log(pQ.get(1));
 }
 
 
